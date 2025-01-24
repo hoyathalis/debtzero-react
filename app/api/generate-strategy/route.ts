@@ -41,7 +41,11 @@ export async function POST(request: Request) {
        // console.log('Raw LLM response content:', completion.choices[0].message.content);
         let llmResponse;
         try {
-            llmResponse = JSON.parse(completion.choices[0].message.content);
+            const content = completion.choices[0].message.content;
+            if (content === null) {
+                throw new Error('LLM response content is null');
+            }
+            llmResponse = JSON.parse(content);
         } catch (parseError) {
             console.error('Error parsing LLM response:', parseError);
             return NextResponse.json({ error: 'Failed to parse LLM response' }, { status: 500 });
