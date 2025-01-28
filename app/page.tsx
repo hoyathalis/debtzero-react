@@ -1,26 +1,22 @@
-'use client'; // Enable client-side interactivity
+'use client';
 
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import Image from 'next/image';
-import Card from './components/persona';
-import Loading from './components/loading';
-import PersonaSelection from './components/PersonaSelection';
-import PersonaDetailsForm from './components/PersonaDetailsForm';
+import FinancialQuestionsForm from './components/FinancialQuestionsForm';
+import MethodifyAccess from './components/MethodifyAccess';
 import StrategyOverview from './components/StrategyOverview';
-import { PERSONAS, PERSONA_DATA } from './data/personaData';
 import ModelSelector from './components/ModelSelector';
 import Link from 'next/link';
 
 export default function Home() {
-  const [selectedPersona, setSelectedPersona] = useState<keyof typeof PERSONA_DATA | null>(null);
   const [strategies, setStrategies] = useState<any[]>([]);
   const [expandedIndex, setExpandedIndex] = useState<number>(-1);
   const [loading, setLoading] = useState<boolean>(false);
-  const [formData, setFormData] = useState<any>({});
   const [selectedModel, setSelectedModel] = useState<'mock' | 'zerodebt' | 'zerodebt-pro'>('mock');
   const [statusMessages, setStatusMessages] = useState<string[]>([]);
   const [currentMessageIndex, setCurrentMessageIndex] = useState<number>(0);
+  const [currentStep, setCurrentStep] = useState<number>(0);
+  const [financialData, setFinancialData] = useState<any>(null);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -29,7 +25,7 @@ export default function Home() {
         'Analyzing financial information...',
         'Creating a good debt strategy...',
         'Generating personalized recommendations...',
-        'Finalizing your debt plan...'
+        'Finalizing your debt plan...',
       ];
       setStatusMessages(messages);
       setCurrentMessageIndex(0);
@@ -43,39 +39,25 @@ export default function Home() {
     return () => clearInterval(interval);
   }, [loading]);
 
-  const handlePersonaClick = (persona: keyof typeof PERSONA_DATA) => {
-    setSelectedPersona(persona);
-    setFormData(PERSONA_DATA[persona as keyof typeof PERSONA_DATA]); 
-    setExpandedIndex(-1);
+  const handleFinancialDataSubmit = async (data: any) => {
+    setFinancialData(data);
+    setCurrentStep(1); // Move to MethodifyAccess step
   };
 
-  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>, path: string) => {
-    const keys = path.split('.');
-    const value = e.target.value;
-
-    setFormData((prevData: any) => {
-      const newData = { ...prevData };
-      let current = newData;
-      for (let i = 0; i < keys.length - 1; i++) {
-        current = current[keys[i]];
-      }
-      current[keys[keys.length - 1]] = value;
-      return newData;
-    });
+  const handleAccessGranted = () => {
+    setCurrentStep(2); // Move to strategy step after access is granted
   };
 
   const handleGenerateStrategy = async () => {
-    if (!selectedPersona) return;
-
     setLoading(true);
     try {
       const response = await axios.post('/api/generate-strategy', {
-        persona: selectedPersona,
-        financialData: formData, // Ensure formData contains financial data
-        isMock: selectedModel === 'mock'
+        financialData,
+        isMock: selectedModel === 'mock',
+        modelType: selectedModel,
       });
-      setStrategies((prev) => [...prev, { ...response.data, persona: selectedPersona }]);
-      setExpandedIndex(strategies.length); 
+      setStrategies((prev) => [...prev, response.data]);
+      setExpandedIndex(strategies.length);
     } catch (error) {
       console.error('Error generating strategy:', error);
     } finally {
@@ -89,6 +71,56 @@ export default function Home() {
       setExpandedIndex(-1);
     } else if (expandedIndex > index) {
       setExpandedIndex(expandedIndex - 1);
+    }
+  };
+
+  const renderStepContent = () => {
+    switch (currentStep) {
+      case 0:
+        return (
+          <div className="bg-white p-6 rounded-lg shadow-lg">
+            <FinancialQuestionsForm 
+              onSubmit={handleFinancialDataSubmit}
+              autoAdvance={true} // Add this prop to your form component
+            />
+          </div>
+        );
+      case 1:
+        return (
+          <div className="bg-white p-6 rounded-lg shadow-lg">
+            <MethodifyAccess onAccessGranted={handleAccessGranted} />
+          </div>
+        );
+      case 2:
+        return (
+          <div className="bg-white p-6 rounded-lg shadow-lg">
+            <h2 className="text-2xl font-bold mb-4">Debt Strategy</h2>
+            <div className="mb-6">
+              <ModelSelector selectedModel={selectedModel} setSelectedModel={setSelectedModel} />
+              {!strategies.length && (
+                <button
+                  onClick={handleGenerateStrategy}
+                  className="w-full mt-4 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                >
+                  Generate Strategy
+                </button>
+              )}
+            </div>
+            {loading && (
+              <div className="mt-2 text-sm text-gray-600 text-center">
+                <p>{statusMessages[currentMessageIndex]}</p>
+              </div>
+            )}
+            <StrategyOverview
+              strategies={strategies}
+              expandedIndex={expandedIndex}
+              setExpandedIndex={setExpandedIndex}
+              deleteStrategy={deleteStrategy}
+            />
+          </div>
+        );
+      default:
+        return null;
     }
   };
 
@@ -132,51 +164,24 @@ export default function Home() {
           </p>
         </section>
 
-        {/* Persona Selection */}
-        <div className="flex flex-col gap-8">
-          <PersonaSelection
-            personas={PERSONAS}
-            selectedPersona={selectedPersona}
-            handlePersonaClick={handlePersonaClick}
-          />
-
-          {selectedPersona && (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              {/* Persona Details Form */}
-              <div className="lg:col-span-1">
-                <PersonaDetailsForm
-                  selectedPersona={selectedPersona}
-                  formData={formData}
-                  handleFormChange={handleFormChange}
-                />
-              </div>
-
-              {/* Strategy and Model Selection */}
-              <div className="lg:col-span-2 flex flex-col gap-4">
-                <div className="bg-white p-6 rounded-lg shadow">
-                  <ModelSelector selectedModel={selectedModel} setSelectedModel={setSelectedModel} />
-                </div>
-                <button
-                  onClick={handleGenerateStrategy}
-                  className="p-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-green-400 transition-colors"
-                  disabled={loading}
-                >
-                  {loading ? 'Generating...' : 'Generate Strategy'}
-                </button>
-                {loading && (
-                  <div className="mt-2 text-sm text-gray-600 text-center">
-                    <p>{statusMessages[currentMessageIndex]}</p>
-                  </div>
-                )}
-                <StrategyOverview
-                  strategies={strategies}
-                  expandedIndex={expandedIndex}
-                  setExpandedIndex={setExpandedIndex}
-                  deleteStrategy={deleteStrategy} // Pass deleteStrategy prop
-                />
-              </div>
-            </div>
-          )}
+        {/* Card View Content */}
+        <div className="max-w-4xl mx-auto">
+          {renderStepContent()}
+          
+          {/* Navigation Buttons */}
+          <div className="flex justify-between mt-6">
+            <button
+              onClick={() => setCurrentStep(currentStep - 1)}
+              disabled={currentStep === 0}
+              className={`px-4 py-2 rounded ${
+                currentStep === 0
+                  ? 'bg-gray-300 cursor-not-allowed'
+                  : 'bg-green-600 hover:bg-green-700 text-white'
+              }`}
+            >
+              Previous
+            </button>
+          </div>
         </div>
       </main>
 

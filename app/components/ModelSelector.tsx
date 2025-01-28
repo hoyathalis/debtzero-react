@@ -7,7 +7,9 @@ interface ModelSelectorProps {
 
 export default function ModelSelector({ selectedModel, setSelectedModel }: ModelSelectorProps) {
     const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        setSelectedModel(e.target.value);
+        const newModel = e.target.value;
+        console.log(`Model changed to: ${newModel}`);
+        setSelectedModel(newModel);
     };
 
     const containerStyle: React.CSSProperties = {
@@ -63,6 +65,7 @@ export default function ModelSelector({ selectedModel, setSelectedModel }: Model
                 <option value="mock">Mock</option>
                 <option value="zerodebt">Zerodebt Model</option>
                 <option value="zerodebt-pro">Zerodebt Pro Model</option>
+                <option value="o1-preview">O1 Preview</option>
             </select>
         </div>
     );
