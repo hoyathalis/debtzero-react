@@ -22,28 +22,27 @@ export default function MethodifyAccess({ onAccessGranted }: MethodifyAccessProp
   return (
     <div className="bg-white p-8 rounded-lg shadow-lg max-w-2xl mx-auto">
       <h2 className="text-2xl font-bold mb-6 text-center flex items-center justify-center gap-2">
-        <FaLock className="text-green-600" /> Connect Your Accounts
+        <FaLock className="text-green-600" /> <span className="text-black">Connect Your Accounts</span>
       </h2>
       <p className="text-gray-600 mb-8 text-center">
-        Securely access your loan and debt information for accurate strategies.
       </p>
       
       <div className="space-y-4">
         <div className="border p-4 rounded-lg">
           <div className="flex items-center gap-4">
             <div className="flex-1">
-              <h3 className="font-semibold mb-2">Why connect your accounts?</h3>
-              <ul className="text-gray-600">
+                <h3 className="font-semibold mb-2 text-black">Why connect your accounts?</h3>
+                <ul className="text-gray-600 space-y-3">
                 <li className="flex items-center gap-2">
-                  <FaChartLine className="text-green-600" /> Get a complete view of your debts
+                  <FaChartLine className="text-green-600" /> Analyze your complete liability portfolio
                 </li>
                 <li className="flex items-center gap-2">
-                  <FaLightbulb className="text-green-600" /> Receive personalized recommendations
+                  <FaLightbulb className="text-green-600" /> Get tailored debt optimization strategies
                 </li>
                 <li className="flex items-center gap-2">
-                  <FaSync className="text-green-600" /> Track your progress automatically
+                  <FaSync className="text-green-600" /> Monitor your debt reduction progress in real-time
                 </li>
-              </ul>
+                </ul>
             </div>
           </div>
         </div>

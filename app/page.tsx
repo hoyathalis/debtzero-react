@@ -19,6 +19,12 @@ export default function Home() {
   const [financialData, setFinancialData] = useState<any>(null);
 
   useEffect(() => {
+    // This ensures the component is mounted before any client-side state updates
+    setStatusMessages([]);
+    setCurrentMessageIndex(0);
+  }, []);
+
+  useEffect(() => {
     let interval: NodeJS.Timeout;
     if (loading) {
       const messages = [
@@ -94,7 +100,6 @@ export default function Home() {
       case 2:
         return (
           <div className="bg-white p-6 rounded-lg shadow-lg">
-            <h2 className="text-2xl font-bold mb-4">Debt Strategy</h2>
             <div className="mb-6">
               <ModelSelector selectedModel={selectedModel} setSelectedModel={setSelectedModel} />
               {!strategies.length && (

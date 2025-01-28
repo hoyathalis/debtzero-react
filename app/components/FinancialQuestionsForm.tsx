@@ -27,13 +27,14 @@ export default function FinancialQuestionsForm({ onSubmit, selectedModel }: Fina
                 apr: 6.5,
                 payment: { type: "fixed", amount: 350 }
             },
-            {
-                name: "Student Loan",
-                amount: 25000,
-                apr: 5.8,
-                payment: { type: "fixed", amount: 280 }
-            }
-        ],
+            // {
+            //     name: "Student Loan",
+            //     amount: 25000,
+            //     apr: 5.8,
+            //     payment: { type: "fixed", amount: 280 }
+            // }
+        ]
+        ,
         additionalFactors: {
             monthlyVariableIncome: [200, 400],
             upcomingExpenses: 800,
